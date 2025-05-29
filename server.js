@@ -10,12 +10,16 @@ const authRoutes = require('./routes/auth');
 
 const app = express();
 
-// 1. حل مشكلة CORS بشكل نهائي
-const allowedOrigins = process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim());
+// 1. إعدادات CORS المحدثة
+const allowedOrigins = process.env.ALLOWED_ORIGINS 
+  ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim())
+  : ['http://localhost:3000', 'http://127.0.0.1:5501'];
+
+console.log('🔒 Allowed origins:', allowedOrigins);
 
 const corsOptions = {
   origin: function (origin, callback) {
-    // السماح لطلبات Postman وcurl (بدون origin)
+    // السماح بطلبات بدون أصل (مثل Postman)
     if (!origin) return callback(null, true);
     
     // السماح للمصادر المسجلة
@@ -47,25 +51,44 @@ app.use('/api/products', productRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/auth', authRoutes);
 
-// 6. صفحة الترحيب
+// 6. صفحة الترحيب المعدلة
 app.get('/', (req, res) => {
-  res.send(`
-    <h1>Restaurant Management API</h1>
-    <p>API is running successfully</p>
-    <h2>Allowed Origins:</h2>
-    <ul>
-      ${allowedOrigins.map(origin => `<li>${origin}</li>`).join('')}
-    </ul>
-    <h2>Available Endpoints:</h2>
-    <ul>
-      <li>POST /api/auth/login - User login</li>
-      <li>GET /api/bookings - Get all bookings</li>
-      <li>GET /api/products - Get all products</li>
-    </ul>
-  `);
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Restaurant API</title>
+      <style>
+        body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
+        h1 { color: #2c3e50; }
+        ul { list-style: none; padding: 0; }
+        li { margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 5px; }
+        .origin { display: inline-block; padding: 3px 8px; background: #e9ecef; border-radius: 3px; font-family: monospace; }
+      </style>
+    </head>
+    <body>
+      <h1>Restaurant Management API</h1>
+      <p>API is running successfully</p>
+      
+      <h2>Allowed Origins:</h2>
+      <ul>
+        ${allowedOrigins.map(origin => `<li><span class="origin">${origin}</span></li>`).join('')}
+      </ul>
+      
+      <h2>Available Endpoints:</h2>
+      <ul>
+        <li>POST /api/auth/login - User login</li>
+        <li>GET /api/bookings - Get all bookings</li>
+        <li>GET /api/products - Get all products</li>
+      </ul>
+      
+      <p><strong>Current time:</strong> ${new Date().toLocaleString()}</p>
+    </body>
+    </html>
+  `;
+  
+  res.send(html);
 });
-
-
 // 5. التحكم في الأخطاء
 app.use((err, req, res, next) => {
   console.error(err.stack);
@@ -93,7 +116,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: 'Internal Server Error' });
 });
 
-// 6. اتصال قاعدة البيانات
+// 8. اتصال قاعدة البيانات
 mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
