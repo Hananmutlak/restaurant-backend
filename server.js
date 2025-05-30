@@ -40,7 +40,7 @@ const corsOptions = {
 app.options('*', cors(corsOptions));
 
 // 3. تطبيق CORS
-app.use(cors(corsOptions));
+app.use(cors());
 
 // 4. الميدل وير الأساسية
 app.use(express.json());
