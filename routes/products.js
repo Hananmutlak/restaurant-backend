@@ -53,7 +53,15 @@ router.delete('/:id', verifyToken, async (req, res) => {
 });
 
 // جلب كل المنتجات
-
+router.get('/', async (req, res) => {
+  try {
+    const products = await Product.find();
+    res.json(products);
+  } catch (err) {
+    console.error('خطأ في تحميل المنتجات:', err.message);
+    res.status(500).json({ error: 'فشل في تحميل المنتجات' });
+  }
+});
 // جلب منتج واحد
 router.get('/:id', async (req, res) => {
   try {
