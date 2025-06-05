@@ -3,7 +3,7 @@ const router = express.Router();
 const Product = require('../models/Product');
 const verifyToken = require('../middleware/verifyToken');
 
-// إضافة منتج جديد بدون صورة
+
 router.post('/', verifyToken, async (req, res) => {
   try {
     const { name, description, price, available } = req.body;
@@ -11,7 +11,7 @@ router.post('/', verifyToken, async (req, res) => {
       name,
       description,
       price: parseFloat(price),
-      available: available === 'true' || available === '1'
+     available: Boolean(available)
     });
     await product.save();
     res.json(product);
@@ -28,8 +28,8 @@ router.put('/:id', verifyToken, async (req, res) => {
     if (req.body.name) updates.name = req.body.name;
     if (req.body.description) updates.description = req.body.description;
     if (req.body.price) updates.price = parseFloat(req.body.price);
-    if (req.body.available !== undefined) {
-      updates.available = req.body.available === 'true' || req.body.available === '1';
+     if (req.body.available !== undefined) {
+      updates.available = Boolean(req.body.available);
     }
 
     const updatedProduct = await Product.findByIdAndUpdate(req.params.id, updates, { new: true });
